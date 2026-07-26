@@ -55,7 +55,7 @@ gate on this host.
 - The benchmark uses one position. More positions and devices are needed
   before drawing broad performance conclusions.
 - pthreads require cross-origin isolation headers in browsers.
-- Safari and iPad behavior has not been tested.
+- iPad behavior has not been tested.
 - `NODERAWFS` remains CLI-only; the browser build loads data into MEMFS.
 
 ## Browser results
@@ -72,6 +72,26 @@ with a fresh page and module instance for every run.
 Both browsers pass the 130 visits/s threshold on this host. The Selenium smoke
 test also verifies cross-origin isolation, model loading, pthread execution,
 process exit, and rendering of the measured result.
+
+### Mac mini results
+
+The same Tailnet HTTPS deployment was tested on an Apple M2 Mac mini with 8 GB
+of memory. Both browser runs completed with WebAssembly threads and SIMD
+enabled:
+
+| Mac mini browser | visits/s | Reported time | 130 visits/s gate |
+| --- | ---: | ---: | --- |
+| Safari | 124.66 | 3.2 s | Miss by 4.1% |
+| Chrome | 125.08 | 3.2 s | Miss by 3.8% |
+
+This is a borderline result rather than a hard failure for the application:
+400 visits take 0.2 seconds longer than the original 3-second target. About
+375 visits would fit in 3 seconds at the measured rate.
+
+Search threading scales well on the Linux development host. A single
+400-visit position measured 143.67, 283.31, 403.41, and 473.73 visits/s with
+one through four threads respectively. The browser UI exposes the same thread
+selection so devices can trade a small fixed-visit strength cost for latency.
 
 ## HumanSL results
 
@@ -93,3 +113,8 @@ The dual-model path returns both `policy` and `humanPolicy`, which matches the
 intended application architecture: search with the small normal model and use
 HumanSL only for the extra policy evaluation. The browser timings use a local
 HTTP server and do not include a real-world 94.5 MiB internet download.
+
+The dual-model HumanSL path also completed on Mac mini Safari. The browser
+loaded 99.21 MiB into MEMFS, initialized the normal version 8 model and
+HumanSL version 15 model, and returned a `humanPolicy` response with exit code
+0.

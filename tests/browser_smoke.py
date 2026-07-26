@@ -8,6 +8,7 @@ import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import Select
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -35,6 +36,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--browser", choices=("firefox", "chrome"), default="firefox")
     parser.add_argument("--mode", choices=("benchmark", "human"), default="benchmark")
+    parser.add_argument("--threads", choices=("1", "2", "3", "4"), default="1")
     parser.add_argument("--url", default="http://127.0.0.1:8080/")
     args = parser.parse_args()
 
@@ -49,6 +51,8 @@ def main():
         if status != "READY":
             raise RuntimeError(driver.find_element(By.ID, "log-output").text)
 
+        if args.mode == "benchmark":
+            Select(driver.find_element(By.ID, "thread-count")).select_by_value(args.threads)
         driver.find_element(By.ID, "btn-run").click()
         wait = WebDriverWait(driver, 300)
         wait.until(lambda d: d.find_element(By.ID, "status-value").text in ("DONE", "ERROR"))
@@ -64,6 +68,7 @@ def main():
         output = {
             "browser": args.browser,
             "mode": args.mode,
+            "threads": int(args.threads) if args.mode == "benchmark" else None,
             "elapsed_seconds": round(time.monotonic() - started, 2),
         }
         if match:

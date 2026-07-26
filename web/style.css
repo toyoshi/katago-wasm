@@ -110,6 +110,22 @@ main {
   margin-top: 1rem;
 }
 
+#thread-control {
+  align-items: center;
+  color: var(--text-dim);
+  display: flex;
+  font-size: 0.8rem;
+  gap: 0.5rem;
+}
+
+select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 0.5rem;
+}
+
 button {
   font-family: var(--sans);
   font-size: 0.85rem;
@@ -212,4 +228,6 @@ footer {
   main { padding: 1rem; }
   .status-row { padding: 0.5rem 0.75rem; }
   #log-output { font-size: 0.72rem; max-height: 50vh; }
+  #controls { flex-wrap: wrap; }
+  #thread-control { width: 100%; }
 }

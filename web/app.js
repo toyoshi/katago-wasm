@@ -8,7 +8,10 @@ const runButton = document.querySelector("#btn-run");
 const clearButton = document.querySelector("#btn-clear");
 const saveButton = document.querySelector("#btn-save-log");
 const logOutput = document.querySelector("#log-output");
+const threadControl = document.querySelector("#thread-control");
+const threadCount = document.querySelector("#thread-count");
 const humanMode = new URLSearchParams(window.location.search).get("mode") === "human";
+threadControl.hidden = humanMode;
 
 let module;
 let running = false;
@@ -118,7 +121,7 @@ function runBenchmark() {
     "-model", "/katago/model.txt.gz",
     "-config", "/katago/benchmark.cfg",
     "-v", "400",
-    "-t", "1",
+    "-t", threadCount.value,
     "-n", "1",
     "-boardsize", "9",
     "-fixed-batch-size", "1",

@@ -81,6 +81,7 @@ browser while the server is running:
 ```sh
 python3 tests/browser_smoke.py --browser firefox
 python3 tests/browser_smoke.py --browser chrome
+python3 tests/browser_smoke.py --browser firefox --threads 2
 python3 tests/browser_smoke.py --browser firefox --mode human
 ```
 
@@ -106,6 +107,11 @@ python3 serve.py --host 0.0.0.0 --port 8443 \
 
 The certificate must be trusted by the device. The server supplies the
 required COOP and COEP headers.
+
+An Apple M2 Mac mini with 8 GB of memory completed at 124.66 visits/s in
+Safari and 125.08 visits/s in Chrome over Tailnet HTTPS, or 3.2 seconds for
+400 visits. The Mac Safari HumanSL check also loaded both models and returned
+`humanPolicy` successfully. iPad remains untested.
 
 ## License
 
