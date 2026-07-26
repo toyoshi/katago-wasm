@@ -52,11 +52,24 @@ gate on this host.
 
 ## Limitations
 
-- These are Node.js results, not browser measurements.
-- The benchmark uses one position. More positions and browser/device runs are
-  needed before drawing broad performance conclusions.
+- The benchmark uses one position. More positions and devices are needed
+  before drawing broad performance conclusions.
 - pthreads require cross-origin isolation headers in browsers.
 - Safari and iPad behavior has not been tested.
 - HumanSL model loading and performance have not been tested.
-- `NODERAWFS` is intentionally CLI-specific and must be replaced by a browser
-  model-loading strategy.
+- `NODERAWFS` remains CLI-only; the browser build loads data into MEMFS.
+
+## Browser results
+
+The browser build uses MEMFS, WebAssembly SIMD, eight preallocated pthread
+workers, and `PROXY_TO_PTHREAD`. Each browser was run three times sequentially
+with a fresh page and module instance for every run.
+
+| Browser | Run 1 | Run 2 | Run 3 | Median |
+| --- | ---: | ---: | ---: | ---: |
+| Firefox 153.0 | 142.44 | 141.11 | 138.28 | **141.11 visits/s** |
+| Chromium 150.0.7871.128 | 149.92 | 159.74 | 156.17 | **156.17 visits/s** |
+
+Both browsers pass the 130 visits/s threshold on this host. The Selenium smoke
+test also verifies cross-origin isolation, model loading, pthread execution,
+process exit, and rendering of the measured result.

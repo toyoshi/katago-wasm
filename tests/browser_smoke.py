@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import re
+import shutil
+import time
+
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.support.ui import WebDriverWait
+
+
+def create_driver(browser):
+    if browser == "firefox":
+        options = webdriver.FirefoxOptions()
+        options.add_argument("-headless")
+        return webdriver.Firefox(
+            options=options,
+            service=FirefoxService(executable_path=shutil.which("geckodriver")),
+        )
+
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless=new")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    return webdriver.Chrome(
+        options=options,
+        service=ChromeService(executable_path=shutil.which("chromedriver")),
+    )
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--browser", choices=("firefox", "chrome"), default="firefox")
+    parser.add_argument("--url", default="http://127.0.0.1:8080/")
+    args = parser.parse_args()
+
+    driver = create_driver(args.browser)
+    started = time.monotonic()
+    try:
+        driver.get(args.url)
+        wait = WebDriverWait(driver, 180)
+        wait.until(lambda d: d.find_element(By.ID, "status-value").text in ("READY", "ERROR"))
+        status = driver.find_element(By.ID, "status-value").text
+        if status != "READY":
+            raise RuntimeError(driver.find_element(By.ID, "log-output").text)
+
+        driver.find_element(By.ID, "btn-run").click()
+        wait = WebDriverWait(driver, 300)
+        wait.until(lambda d: d.find_element(By.ID, "status-value").text in ("DONE", "ERROR"))
+
+        status = driver.find_element(By.ID, "status-value").text
+        log = driver.find_element(By.ID, "log-output").text
+        result = driver.find_element(By.ID, "result-value").text
+        match = re.search(r"([0-9.]+) visits/s", result)
+        if status != "DONE" or not match:
+            raise RuntimeError(log)
+
+        print(json.dumps({
+            "browser": args.browser,
+            "visits_per_second": float(match.group(1)),
+            "elapsed_seconds": round(time.monotonic() - started, 2),
+        }))
+    finally:
+        driver.quit()
+
+
+if __name__ == "__main__":
+    main()

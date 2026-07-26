@@ -1,8 +1,10 @@
 .cache/
 build/
+build-browser/
+web/assets/
 *.wasm
-*.js
 *.data
 *.abi
 *.info
 *.log
+__pycache__/

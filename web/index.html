@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KataGo WASM Benchmark</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<h1>KataGo WASM</h1>
+<p class="subtitle">KataGo v1.16.5 &middot; Eigen &middot; WebAssembly</p>
+</header>
+<main>
+<section id="status-panel">
+<div class="status-row" id="status-row">
+<span class="status-label">Status</span>
+<span class="status-value" id="status-value">&mdash;</span>
+</div>
+<div class="status-row" id="progress-row">
+<span class="status-label">Progress</span>
+<span class="status-value" id="progress-value">&mdash;</span>
+</div>
+<div class="status-row" id="result-row" hidden>
+<span class="status-label">Result</span>
+<span class="status-value result-value" id="result-value">&mdash;</span>
+</div>
+</section>
+<section id="controls">
+<button id="btn-run" disabled>Loading...</button>
+<button id="btn-clear" disabled>Clear Log</button>
+</section>
+<section id="log-panel">
+<div class="log-header">
+<span>Console Output</span>
+<button id="btn-save-log" class="btn-small" title="Save log to file">Save</button>
+</div>
+<pre id="log-output"><span class="log-line log-info">Initializing KataGo WASM...</span></pre>
+</section>
+</main>
+<footer>
+<p>KataGo and its models are under their respective licenses. Wrapper code: MIT</p>
+</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>

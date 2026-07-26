@@ -8,7 +8,7 @@ The initial Node.js spike passes both feasibility gates:
 - Gate A: the build completes without modifying KataGo source.
 - Gate B: a b6c96 network reaches a median 148.45 visits/s on a 9x9 board.
 
-Browser packaging is not implemented yet.
+An experimental zero-dependency browser benchmark is also included.
 
 ## Requirements
 
@@ -51,6 +51,39 @@ wrapper supplies the compatibility settings that upstream CMake does not:
 - Node raw filesystem access for the CLI benchmark
 
 See [BENCHMARK.md](BENCHMARK.md) for results and limitations.
+
+Browser build adds:
+
+- `-sMODULARIZE -sEXPORT_ES6 -sINVOKE_RUN=0`: ES6 modular factory, no auto-run
+- `-sFORCE_FILESYSTEM -sPTHREAD_POOL_SIZE=8 -sSTACK_SIZE=8388608`: virtual FS and pthreads
+- `-msimd128`: SIMD vectorization
+- `-sALLOW_MEMORY_GROWTH=1`: dynamic memory expansion
+- `-sPROXY_TO_PTHREAD=1` keeps the browser main thread responsive
+- No `NODERAWFS`: model and config data are written to Emscripten MEMFS
+
+## Browser build
+
+```sh
+./build-browser.sh
+./setup-browser-assets.sh
+python3 serve.py
+```
+
+Open http://127.0.0.1:8080/ in a browser. The UI loads the WASM module via ES
+module import from `web/assets/`, places the verified model and config into Emscripten's
+virtual filesystem, and runs the same 9x9/400-visit benchmark as the Node
+build.
+
+An optional Selenium smoke test runs the complete benchmark in a headless
+browser while the server is running:
+
+```sh
+python3 tests/browser_smoke.py --browser firefox
+python3 tests/browser_smoke.py --browser chrome
+```
+
+Measured medians on the development host were 141.11 visits/s in Firefox 153
+and 156.17 visits/s in Chromium 150. See [BENCHMARK.md](BENCHMARK.md).
 
 ## License
 
