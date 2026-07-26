@@ -5,12 +5,13 @@ Requires Cross-Origin-Opener-Policy and Cross-Origin-Embedder-Policy
 headers for WebAssembly threads to function in the browser.
 """
 
+import argparse
 import http.server
 import mimetypes
 from pathlib import Path
+import ssl
 import sys
 
-PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
 WEB_DIR = Path(__file__).resolve().parent / "web"
 
 
@@ -32,9 +33,25 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=8080)
+    parser.add_argument("--cert")
+    parser.add_argument("--key")
+    args = parser.parse_args()
+    if bool(args.cert) != bool(args.key):
+        parser.error("--cert and --key must be specified together")
+
     mimetypes.add_type("text/javascript", ".js")
-    server = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
-    print(f"KataGo WASM server: http://127.0.0.1:{PORT}/", flush=True)
+    server = http.server.ThreadingHTTPServer((args.host, args.port), Handler)
+    scheme = "http"
+    if args.cert:
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain(args.cert, args.key)
+        server.socket = context.wrap_socket(server.socket, server_side=True)
+        scheme = "https"
+
+    print(f"KataGo WASM server: {scheme}://{args.host}:{args.port}/", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

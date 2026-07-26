@@ -66,6 +66,7 @@ Browser build adds:
 ```sh
 ./build-browser.sh
 ./setup-browser-assets.sh
+./setup-human-assets.sh       # optional 94.5 MiB HumanSL model
 python3 serve.py
 ```
 
@@ -80,10 +81,31 @@ browser while the server is running:
 ```sh
 python3 tests/browser_smoke.py --browser firefox
 python3 tests/browser_smoke.py --browser chrome
+python3 tests/browser_smoke.py --browser firefox --mode human
 ```
 
 Measured medians on the development host were 141.11 visits/s in Firefox 153
 and 156.17 visits/s in Chromium 150. See [BENCHMARK.md](BENCHMARK.md).
+
+The `HumanSL check` mode loads the optional 94.5 MiB official HumanSL model
+alongside b6c96 and verifies that the Analysis Engine returns `humanPolicy`.
+HumanSL is viable as an additional policy evaluation, but not as the primary
+400-visit search model on the Eigen WebAssembly backend.
+
+### Remote devices
+
+WebAssembly threads require a secure, cross-origin-isolated context. Plain HTTP
+works on `localhost`, but an iPad connecting over the network needs trusted
+HTTPS. Given an existing certificate and key, bind the development server to
+the network with:
+
+```sh
+python3 serve.py --host 0.0.0.0 --port 8443 \
+  --cert path/to/fullchain.pem --key path/to/privkey.pem
+```
+
+The certificate must be trusted by the device. The server supplies the
+required COOP and COEP headers.
 
 ## License
 

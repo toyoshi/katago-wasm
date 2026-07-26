@@ -56,7 +56,6 @@ gate on this host.
   before drawing broad performance conclusions.
 - pthreads require cross-origin isolation headers in browsers.
 - Safari and iPad behavior has not been tested.
-- HumanSL model loading and performance have not been tested.
 - `NODERAWFS` remains CLI-only; the browser build loads data into MEMFS.
 
 ## Browser results
@@ -73,3 +72,24 @@ with a fresh page and module instance for every run.
 Both browsers pass the 130 visits/s threshold on this host. The Selenium smoke
 test also verifies cross-origin isolation, model loading, pthread execution,
 process exit, and rendering of the measured result.
+
+## HumanSL results
+
+The official `b18c384nbt-humanv0.bin.gz` model loads successfully as model
+version 15. Its compressed size is 99,066,230 bytes (94.5 MiB), with SHA-256
+`637746e44f0efe00ad1245a50aa9bbf0716efe364c43965ead97bd6835d84ab5`.
+
+Using HumanSL as the primary search model is not practical on this backend:
+
+| Mode | Result |
+| --- | ---: |
+| HumanSL primary, 400 visits | 5.05 visits/s, 79.3 s |
+| Dual-model analysis, 5 distinct positions | 4.32 s including startup |
+| Estimated warm HumanSL policy latency | about 0.2 s per position |
+| Firefox, local asset load plus one policy | 4.89 s |
+| Chromium, local asset load plus one policy | 4.68 s |
+
+The dual-model path returns both `policy` and `humanPolicy`, which matches the
+intended application architecture: search with the small normal model and use
+HumanSL only for the extra policy evaluation. The browser timings use a local
+HTTP server and do not include a real-world 94.5 MiB internet download.

@@ -34,13 +34,15 @@ def create_driver(browser):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--browser", choices=("firefox", "chrome"), default="firefox")
+    parser.add_argument("--mode", choices=("benchmark", "human"), default="benchmark")
     parser.add_argument("--url", default="http://127.0.0.1:8080/")
     args = parser.parse_args()
 
     driver = create_driver(args.browser)
     started = time.monotonic()
     try:
-        driver.get(args.url)
+        url = args.url if args.mode == "benchmark" else f"{args.url}?mode=human"
+        driver.get(url)
         wait = WebDriverWait(driver, 180)
         wait.until(lambda d: d.find_element(By.ID, "status-value").text in ("READY", "ERROR"))
         status = driver.find_element(By.ID, "status-value").text
@@ -55,14 +57,18 @@ def main():
         log = driver.find_element(By.ID, "log-output").text
         result = driver.find_element(By.ID, "result-value").text
         match = re.search(r"([0-9.]+) visits/s", result)
-        if status != "DONE" or not match:
+        valid_result = match if args.mode == "benchmark" else result == "HumanSL policy returned"
+        if status != "DONE" or not valid_result:
             raise RuntimeError(log)
 
-        print(json.dumps({
+        output = {
             "browser": args.browser,
-            "visits_per_second": float(match.group(1)),
+            "mode": args.mode,
             "elapsed_seconds": round(time.monotonic() - started, 2),
-        }))
+        }
+        if match:
+            output["visits_per_second"] = float(match.group(1))
+        print(json.dumps(output))
     finally:
         driver.quit()
 
