@@ -1,0 +1,8 @@
+.cache/
+build/
+*.wasm
+*.js
+*.data
+*.abi
+*.info
+*.log
